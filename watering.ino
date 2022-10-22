@@ -2,10 +2,10 @@
 #define RELAY_PIN 9 // relay com pin
 #define SENSOR_PIN 2 // 
 /*
-#define SD_MISO_PIN x // white cable
-#define SD_MOSI_PIN x // dark green cable
-#define SD_SCK_PIN x // yellow cable
-#define SD_CS_PIN x // orange cable
+#define SD_MISO_PIN 5 // white cable
+#define SD_MOSI_PIN 6 // dark green cable
+#define SD_SCK_PIN 4 // yellow cable
+#define SD_CS_PIN 7 // orange cable
 */
 
 #define WATERING_MOISTURE_LIMIT 1800 // for values > WATERING_MOISTURE_LIMIT the pump activates for WATERING_TIME_SEC
@@ -35,7 +35,7 @@ void connectdiscord(void){
 }
 
 int writeMoistureToFile(int moisture){
-  File file = SD.open("/log1", FILE_APPEND);
+  File file = SD.open("/log", FILE_APPEND);
   if(!file){
     Serial.println("file open failed");
     return -1;
