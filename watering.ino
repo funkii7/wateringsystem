@@ -2,10 +2,10 @@
 #define RELAY_PIN 9 // relay com pin
 #define SENSOR_PIN 2 // 
 /*
-#define SD_MISO_PIN 5 // white cable
-#define SD_MOSI_PIN 6 // dark green cable
-#define SD_SCK_PIN 4 // yellow cable
-#define SD_CS_PIN 7 // orange cable
+#define SD_MISO_PIN x // white cable
+#define SD_MOSI_PIN x // dark green cable
+#define SD_SCK_PIN x // yellow cable
+#define SD_CS_PIN x // orange cable
 */
 
 #define WATERING_MOISTURE_LIMIT 1800 // for values > WATERING_MOISTURE_LIMIT the pump activates for WATERING_TIME_SEC
@@ -35,7 +35,7 @@ void connectdiscord(void){
 }
 
 int writeMoistureToFile(int moisture){
-  File file = SD.open("/log", FILE_APPEND);
+  File file = SD.open("/log1", FILE_APPEND);
   if(!file){
     Serial.println("file open failed");
     return -1;
@@ -48,7 +48,6 @@ int writeMoistureToFile(int moisture){
 }
 
 int pump(){ // activate pump
-//  discord.send(WATERING_MESSAGE);
     pinMode(RELAY_PIN, OUTPUT);
     delay(WATERING_TIME_SEC * 1000);
     pinMode(RELAY_PIN, INPUT);
@@ -59,7 +58,6 @@ void setup() {
   connectdiscord();
   if (!SD.begin()) {
     Serial.println("Card Mount Failed");
-    return;
   }
 
   pinMode(RELAY_PIN, INPUT); // set relay to low per default
@@ -79,29 +77,38 @@ void loop() {
   filewritecount++;
   filewritetempmoisture += sensorvalue;
   Serial.println(sensorvalue);
-  if(filewritecount > SD_CARD_WRITE_DELAY){ // get the average value after SD_CARD_WRITE_DELAY seconds
+  if(filewritecount >= SD_CARD_WRITE_DELAY){ // get the average value after SD_CARD_WRITE_DELAY seconds
     filewritetempmoisture /= SD_CARD_WRITE_DELAY; // calculate average value
     filewritecount = 0; // reset counter
-    /* debug
+    
     Serial.println("---");
     Serial.println(filewritetempmoisture);
     Serial.println("---");
-    */
+    
     writeMoistureToFile(filewritetempmoisture);
 
     discordtempmoisture += filewritetempmoisture;
     filewritetempmoisture = 0; // reset value
     discordcount++;
-    if(discordcount > DISCORD_WRITE_DELAY){
-      discord.send(String(discordtempmoisture / DISCORD_WRITE_DELAY)); // calculate average value and send it to discord
+
+    if(discordcount >= DISCORD_WRITE_DELAY){
+
+      discordtempmoisture /= DISCORD_WRITE_DELAY; // calculate average value and send it to discord
+      discord.send(String(discordtempmoisture)); 
+      Serial.println("+++");
+      Serial.println(String(discordtempmoisture));
+      Serial.println("+++");
+
+      if(discordtempmoisture > 1800){  // activate the pump for WATERING_TIME_SEC seconds if the configured moisture limit is reached
+        discord.send(WATERING_MESSAGE);
+        pump();
+      } 
+
       discordcount = 0;
       discordtempmoisture = 0;
     }
 
-  // activate the pump for WATERING_TIME_SEC seconds if the configured moisture limit is reached
-    if(sensorvalue > WATERING_MOISTURE_LIMIT){
-      pump();
-    }
+
   }
   delay(1000);
 }
