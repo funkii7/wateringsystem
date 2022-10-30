@@ -8,7 +8,7 @@
 #define SD_CS_PIN x // orange cable
 */
 
-#define WATERING_MOISTURE_LIMIT 1800 // for values > WATERING_MOISTURE_LIMIT the pump activates for WATERING_TIME_SEC
+#define WATERING_MOISTURE_LIMIT 1450 // for values > WATERING_MOISTURE_LIMIT the pump activates for WATERING_TIME_SEC
 #define WATERING_TIME_SEC 3 // plant will be watered for WATERING_TIME_SEC seconds
 #define CHECK_DELAY_SEC 30 // every CHECK_DELAY_SEC seconds the moisture data will be checked
 #define SD_CARD_WRITE_DELAY 30 // every SD_CARD_WRITE_DELAY the data gets written to the sd card
@@ -47,7 +47,7 @@ int writeMoistureToFile(int moisture){
   return 0;
 }
 
-int pump(){ // activate pump
+void pump(){ // activate pump
     pinMode(RELAY_PIN, OUTPUT);
     delay(WATERING_TIME_SEC * 1000);
     pinMode(RELAY_PIN, INPUT);
@@ -99,7 +99,7 @@ void loop() {
       Serial.println(String(discordtempmoisture));
       Serial.println("+++");
 
-      if(discordtempmoisture > 1800){  // activate the pump for WATERING_TIME_SEC seconds if the configured moisture limit is reached
+      if(discordtempmoisture > WATERING_MOISTURE_LIMIT){  // activate the pump for WATERING_TIME_SEC seconds if the configured moisture limit is reached
         discord.send(WATERING_MESSAGE);
         pump();
       } 
